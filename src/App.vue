@@ -3,19 +3,11 @@
     <v-main class="pa-4">
 
       <!-- ================= FORM VIEW ================= -->
-      <createOrder
-        v-if="leadLoaded && !orderCreated"
-        :lead="leadData"
-        :send-billing.sync="sendBilling"
-        @submit="handleSubmit"
-      />
+      <createOrder v-if="leadLoaded && !orderCreated" :lead="leadData" :send-billing.sync="sendBilling"
+        @submit="handleSubmit" />
 
       <!-- ================= SUCCESS VIEW ================= -->
-      <v-card
-        v-if="orderCreated"
-        class="pa-6 text-center"
-        elevation="3"
-      >
+      <v-card v-if="orderCreated" class="pa-6 text-center" elevation="3">
         <v-icon color="success" size="56" class="mb-3">
           mdi-check-circle
         </v-icon>
@@ -124,8 +116,8 @@ export default {
             order: {
               id: this.createdOrderId,
               customer_id: this.createdCustomerId,
-              Number_of_loos_items: this.No_of_Loose_Items || 0,
-              Number_of_bins: this.No_of_Bins || 0
+              Number_of_loos_items: formData.No_of_Loose_Items || 0,
+              Number_of_bins: formData.No_of_Bins || 0
             }
           };
 
@@ -147,10 +139,16 @@ export default {
 
         // ================= NAV =================
         setTimeout(() => {
-          window.open(
-            `https://crm.zoho.com/crm/juujbox/tab/CustomModule19/${this.createdOrderId}`,
-            "_blank"
-          );
+          // window.open(
+          //   `https://crm.zoho.com/crm/juujbox/tab/CustomModule19/${this.createdOrderId}`,
+          //   "_blank"
+          // );
+          ZOHO.CRM.UI.Record.open({
+            Entity: "Orders",
+            RecordID: this.createdOrderId
+          }).then(function (data) {
+            console.log(data)
+          })
         }, 1000);
 
       } catch (err) {
