@@ -124,8 +124,8 @@ export default {
             order: {
               id: this.createdOrderId,
               customer_id: this.createdCustomerId,
-              Number_of_loos_items: formData.Number_of_loos_items || 0,
-              Number_of_bins: formData.Number_of_bins || 0
+              Number_of_loos_items: this.No_of_Loose_Items || 0,
+              Number_of_bins: this.No_of_Bins || 0
             }
           };
 
