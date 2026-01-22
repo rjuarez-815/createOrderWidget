@@ -2,18 +2,45 @@
   <v-app>
     <v-main class="pa-4">
 
-      <!-- ================= FORM VIEW ================= -->
-      <createOrder v-if="leadLoaded && !orderCreated" :lead="leadData" :send-billing.sync="sendBilling"
-        @submit="handleSubmit" />
+      <!-- ================= STUDENT STORAGE ================= -->
+      <createOrder
+        v-if="isStudentStorageFormVisible"
+        :lead="leadData"
+        :universities="universities"
+        :send-billing.sync="sendBilling"
+        @submit="createOrderHandleSubmit"
+      />
+
+      <!-- ================= MOVING BOX RENTAL ================= -->
+      <createOrderMBO
+        v-if="isMBRFormVisible"
+        :lead="leadData"
+        :send-billing.sync="sendBilling"
+        @submit="createOrderHandleSubmit"
+      />
 
       <!-- ================= SUCCESS VIEW ================= -->
       <v-card v-if="orderCreated" class="pa-6 text-center" elevation="3">
         <v-icon color="success" size="56" class="mb-3">
           mdi-check-circle
         </v-icon>
-
         <h3 class="mb-2">Order Created!</h3>
         <p class="mb-6">Opening order...</p>
+      </v-card>
+
+      <!-- ================= FALLBACK VIEW ================= -->
+      <v-card
+        v-if="leadLoaded && !orderCreated && !isSupportedLeadType"
+        class="pa-6 text-center"
+        elevation="3"
+      >
+        <v-icon color="warning" size="48" class="mb-3">
+          mdi-alert-circle
+        </v-icon>
+        <h3>Unsupported Lead Type</h3>
+        <p>
+          Lead Type <strong>{{ leadType }}</strong> is not supported.
+        </p>
       </v-card>
 
     </v-main>
@@ -22,18 +49,24 @@
 
 <script>
 import createOrder from "./components/createOrder.vue";
+import createOrderMBO from "./components/createOrderMBO.vue";
 
 export default {
   name: "App",
-  components: { createOrder },
+  components: {
+    createOrder,
+    createOrderMBO
+  },
 
   data() {
     return {
       leadId: null,
       leadData: null,
       leadLoaded: false,
+      leadType: null,
 
-      sendBilling: "No",
+      universities: [],
+      sendBilling: 'Select', // MUST be blank by default
 
       orderCreated: false,
       createdOrderId: null,
@@ -41,120 +74,152 @@ export default {
     };
   },
 
+  computed: {
+    isStudentStorageFormVisible() {
+      return (
+        this.leadLoaded &&
+        !this.orderCreated &&
+        this.leadType === "Student Storage"
+      );
+    },
+
+    isMBRFormVisible() {
+      return (
+        this.leadLoaded &&
+        !this.orderCreated &&
+        this.leadType === "Moving Box Rental"
+      );
+    },
+
+    isSupportedLeadType() {
+      return ["Student Storage", "Moving Box Rental"].includes(this.leadType);
+    }
+  },
+
   mounted() {
     /* eslint-disable */
-    ZOHO.embeddedApp.on("PageLoad", async (data) => {
-      try {
-        this.leadId = Array.isArray(data.EntityId)
-          ? data.EntityId[0]
-          : data.EntityId;
-
-        const res = await ZOHO.CRM.API.getRecord({
-          Entity: "Leads",
-          RecordID: this.leadId
-        });
-
-        this.leadData = res.data[0];
-        this.leadLoaded = true;
-
-        console.log("[INIT] Lead loaded:", this.leadData);
-      } catch (err) {
-        console.error("[INIT] Lead load failed:", err);
-        alert("Failed to load Lead record.");
-      }
-    });
-
-    ZOHO.embeddedApp.init();
+    this.initializeZohoWidget();
   },
 
   methods: {
-    async handleSubmit(formData) {
-      try {
-        console.log("[SUBMIT] Submit started");
+    /* ================= INIT ================= */
 
+    initializeZohoWidget() {
+      ZOHO.embeddedApp.on("PageLoad", this.handlePageLoad);
+      ZOHO.embeddedApp.init();
+    },
+
+    async handlePageLoad(data) {
+      this.leadId = Array.isArray(data.EntityId)
+        ? data.EntityId[0]
+        : data.EntityId;
+
+      const response = await ZOHO.CRM.API.getRecord({
+        Entity: "Leads",
+        RecordID: this.leadId
+      });
+
+      this.leadData = response.data[0];
+      this.leadType = this.leadData?.Lead_Type || null;
+      this.leadLoaded = true;
+
+      await this.fetchUniversities();
+    },
+
+    async fetchUniversities() {
+      const response = await ZOHO.CRM.API.getAllRecords({
+        Entity: "Universities",
+        page: 1,
+        per_page: 200
+      });
+
+      this.universities = (response.data || []).map(u => ({
+        label: u.Name,
+        value: u.id
+      }));
+    },
+
+    /* ================= ORDER CREATION ================= */
+
+    async createOrderHandleSubmit(orderDetails) {
+      try {
         const payload = {
           leadId: this.leadId,
-          leadType: formData.Lead_Type || "Student Storage",
+          leadType: this.leadType,
           send_billing: this.sendBilling,
           confirmedBy: this.leadData?.Owner?.id || null,
           confirmedAt: new Date().toISOString(),
-          orderDetails: formData
+          orderDetails
         };
 
-        console.log("[SUBMIT] Widget payload:", payload);
-
-        // ================= PHASE 3 =================
-        const resp = await ZOHO.CRM.FUNCTIONS.execute(
+        const response = await ZOHO.CRM.FUNCTIONS.execute(
           "convertLeadtoCustomerOrder_Standalone",
           { arguments: JSON.stringify(payload) }
         );
 
-        const result = JSON.parse(resp.details.output);
-        console.log("[PHASE 3] Result:", result);
-
+        const result = JSON.parse(response.details.output);
         if (result.status !== "success") {
-          throw new Error(result.message || "Order creation failed");
+          throw new Error(result.message);
         }
 
         this.createdOrderId = result.orderId;
         this.createdCustomerId = result.customerId;
         this.orderCreated = true;
 
-        console.log(
-          "[PHASE 3] Stored IDs:",
-          this.createdOrderId,
-          this.createdCustomerId
-        );
+        /* ================= BILLING LOGIC ================= */
 
-        // ================= PHASE 4 =================
         if (this.sendBilling === "Yes") {
-          if (!this.createdCustomerId) {
-            throw new Error("Missing customerId for billing");
+          if (this.leadType === "Student Storage") {
+            await this.createBillingSubscription(orderDetails);
           }
 
-          const billingPayload = {
-            order: {
-              id: this.createdOrderId,
-              customer_id: this.createdCustomerId,
-              Number_of_loos_items: formData.No_of_Loose_Items || 0,
-              Number_of_bins: formData.No_of_Bins || 0
-            }
-          };
-
-          console.log(
-            "[PHASE 4] Billing payload:",
-            billingPayload
-          );
-
-          const billingResp = await ZOHO.CRM.FUNCTIONS.execute(
-            "createZBillingSubscription",
-            { arguments: JSON.stringify(billingPayload) }
-          );
-
-          console.log(
-            "[PHASE 4] Billing response:",
-            billingResp
-          );
+          if (this.leadType === "Moving Box Rental") {
+            await this.createMBRBillingInvoice(orderDetails); // ✅ Option A fix
+          }
         }
 
-        // ================= NAV =================
         setTimeout(() => {
-          // window.open(
-          //   `https://crm.zoho.com/crm/juujbox/tab/CustomModule19/${this.createdOrderId}`,
-          //   "_blank"
-          // );
           ZOHO.CRM.UI.Record.open({
             Entity: "Orders",
             RecordID: this.createdOrderId
-          }).then(function (data) {
-            console.log(data)
-          })
+          });
         }, 1000);
 
       } catch (err) {
-        console.error("[SUBMIT] Error:", err);
-        alert(err.message || "Error creating order");
+        alert(err.message || "Order creation failed");
       }
+    },
+
+    /* ================= STUDENT STORAGE BILLING ================= */
+
+    async createBillingSubscription(orderDetails) {
+      const billingPayload = {
+        order: {
+          id: this.createdOrderId,
+          customer_id: this.createdCustomerId,
+          Number_of_bins: orderDetails.No_of_Bins || 0,
+          Number_of_loose_items: orderDetails.No_of_Loose_Items || 0
+        }
+      };
+
+      await ZOHO.CRM.FUNCTIONS.execute(
+        "createZBillingSubscription",
+        { arguments: JSON.stringify(billingPayload) }
+      );
+    },
+
+    /* ================= MBR BILLING (INVOICE ONLY) ================= */
+
+    async createMBRBillingInvoice(orderDetails) {
+      const payload = {
+        orderId: this.createdOrderId,
+        orderDetails // ✅ Option A: pass full orderDetails
+      };
+
+      await ZOHO.CRM.FUNCTIONS.execute(
+        "createZBillingInvoice",
+        { arguments: JSON.stringify(payload) }
+      );
     }
   }
 };
