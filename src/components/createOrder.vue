@@ -6,7 +6,6 @@
 
     <v-divider class="mb-6" />
 
-    <!-- 🔴 ref added for validation -->
     <v-form ref="form" @submit.prevent="createOrderHandleSubmit">
       <v-row dense>
 
@@ -15,11 +14,11 @@
           <div class="section-title">Lead Information</div>
         </v-col>
 
-        <v-col cols="12" md="6">
+        <v-col cols="6">
           <v-text-field label="First Name" v-model="form.First_Name" outlined dense />
         </v-col>
 
-        <v-col cols="12" md="6">
+        <v-col cols="6">
           <v-text-field label="Last Name" v-model="form.Last_Name" outlined dense />
         </v-col>
 
@@ -32,47 +31,33 @@
         </v-col>
 
         <v-col cols="12">
-          <v-select
-            label="University"
-            :items="universities"
-            item-text="label"
-            item-value="value"
-            v-model="form.Lead_University"
-            outlined
-            dense
-          />
+          <v-select label="University" :items="universities" item-text="label" item-value="value"
+            v-model="form.Lead_University" outlined dense />
         </v-col>
 
-        <!-- ================= Move & Delivery ================= -->
+        <!-- ================= Move Out Details ================= -->
         <v-col cols="12">
-          <div class="section-title mt-6">Move & Delivery</div>
+          <div class="section-title mt-6">Move Out Details</div>
         </v-col>
 
         <v-col cols="12" md="6">
-          <v-text-field
-            type="date"
-            label="Move Out Date"
-            v-model="form.Move_Out_Date"
-            outlined
-            dense
-          />
+          <v-text-field type="date" label="Move Out Date" v-model="form.Move_Out_Date" outlined dense />
         </v-col>
 
-        <v-col cols="12" md="6">
-          <v-text-field
-            label="Delivery Address"
-            v-model="form.Delivery_Address"
-            outlined
-            dense
-          />
+        <v-col cols="6">
+          <v-text-field label="Move Out Address" v-model="form.Move_Out_Address" outlined dense />
         </v-col>
 
-        <v-col cols="12" md="6">
-          <v-text-field label="City" v-model="form.City" outlined dense />
+        <v-col cols="6" md="4">
+          <v-text-field label="Move Out City" v-model="form.Move_Out_City" outlined dense />
         </v-col>
 
-        <v-col cols="12" md="6">
-          <v-text-field label="Zip Code" v-model="form.Zip_Code" outlined dense />
+        <v-col cols="6" md="4">
+          <v-text-field label="Move Out State" v-model="form.Move_Out_State" outlined dense />
+        </v-col>
+
+        <v-col cols="6" md="4">
+          <v-text-field label="Move Out ZIP" v-model="form.Move_Out_Zip" outlined dense />
         </v-col>
 
         <!-- ================= Storage Items ================= -->
@@ -81,68 +66,75 @@
         </v-col>
 
         <v-col cols="12" md="4">
-          <v-text-field
-            type="number"
-            label="Number of Bins"
-            v-model.number="form.No_of_Bins"
-            outlined
-            dense
-          />
+          <v-text-field type="number" label="Number of Bins" v-model.number="form.No_of_Bins" outlined dense />
         </v-col>
 
         <v-col cols="12" md="4">
-          <v-text-field
-            type="number"
-            label="Loose Items"
-            v-model.number="form.No_of_Loose_Items"
-            outlined
-            dense
-          />
+          <v-text-field type="number" label="Loose Items" v-model.number="form.No_of_Loose_Items" outlined dense />
         </v-col>
 
         <v-col cols="12" md="4">
-          <v-text-field
-            label="Total Items"
-            :value="totalItems"
-            readonly
-            outlined
-            dense
-          />
+          <v-text-field label="Total Items" :value="totalItems" readonly outlined dense />
         </v-col>
+
+        <!-- ================= Empty Bin Drop-Off ================= -->
+        <template v-if="form.No_of_Bins > 0">
+          <v-col cols="12">
+            <div class="section-title mt-6">Empty Bin Drop-Off</div>
+          </v-col>
+
+          <v-col cols="12">
+            <v-checkbox label="Skip Empty Bin Drop-Off Details" v-model="skipEmptyBinDropOff" />
+          </v-col>
+
+          <template v-if="!skipEmptyBinDropOff">
+            <v-col cols="12" md="6">
+              <v-text-field type="date" label="Bin Drop-Off Date" v-model="form.Empty_Bin_Drop_Off_Date"
+                :rules="[requiredRule]" outlined dense />
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-text-field label="Bin Drop-Off Address" v-model="form.Empty_Bin_Drop_Off_Address"
+                :rules="[requiredRule]" outlined dense />
+            </v-col>
+
+            <v-col cols="6">
+              <v-text-field label="City" v-model="form.Empty_Bin_Drop_Off_City" :rules="[requiredRule]" outlined
+                dense />
+            </v-col>
+
+            <v-col cols="6">
+              <v-text-field label="State" v-model="form.Empty_Bin_Drop_Off_State" :rules="[requiredRule]" outlined
+                dense />
+            </v-col>
+
+            <v-col cols="6">
+              <v-text-field label="ZIP" v-model="form.Empty_Bin_Drop_Off_Zip" :rules="[requiredRule]" outlined dense />
+            </v-col>
+            <v-col cols="6">
+              <v-text-field label="Time Window" v-model="form.Empty_Bin_Drop_Off_Time_Window" :rules="[requiredRule]"
+                outlined dense />
+            </v-col>
+          </template>
+        </template>
 
         <!-- ================= Pricing ================= -->
         <v-col cols="12">
           <div class="section-title mt-6">Pricing</div>
         </v-col>
 
-        <v-col cols="12" md="6">
-          <v-select
-            label="Pricing Type"
-            :items="['Manual', 'Auto']"
-            v-model="pricingType"
-            outlined
-            dense
-          />
+        <v-col cols="12" md="4">
+          <v-checkbox label="Custom Pricing" v-model="form.Custom_Pricing" />
         </v-col>
 
-        <v-col cols="12" md="6" v-if="pricingType === 'Manual'">
-          <v-text-field
-            type="number"
-            label="Price per Item"
-            v-model.number="pricePerItem"
-            outlined
-            dense
-          />
+        <v-col cols="6" v-if="form.Custom_Pricing">
+          <v-text-field type="number" label="Price per Item" v-model.number="pricePerItem"
+            @input="lastEditedPricingField = 'pricePerItem'" outlined dense />
         </v-col>
 
-        <v-col cols="12" md="6">
-          <v-text-field
-            label="Estimated Total Price"
-            :value="estimatedTotalPrice"
-            readonly
-            outlined
-            dense
-          />
+        <v-col cols="6">
+          <v-text-field type="number" label="Estimated Total Price" v-model.number="estimatedTotalPrice"
+            @input="lastEditedPricingField = 'estimatedTotalPrice'" :error-messages="pricingError" outlined dense />
         </v-col>
 
         <!-- ================= Billing ================= -->
@@ -150,19 +142,9 @@
           <div class="section-title mt-6">Billing</div>
         </v-col>
 
-        <!-- ✅ REQUIRED FIELD (visual + logic) -->
         <v-col cols="12" md="6">
-          <v-select
-            label="Send Billing *"
-            :items="['Yes', 'No', 'Select']"
-            v-model="sendBillingLocal"
-            outlined
-            dense
-            required
-            persistent-hint
-            hint="Required"
-            :rules="[v => !!v || 'Send Billing is required']"
-          />
+          <v-select label="Send Billing *" :items="['Yes', 'No', 'Select']" v-model="sendBillingLocal"
+            :rules="[requiredRule]" outlined dense />
         </v-col>
 
       </v-row>
@@ -182,7 +164,7 @@ export default {
 
   props: {
     lead: { type: Object, required: true },
-    sendBilling: { type: String, default: 'Select' },
+    sendBilling: { type: String, default: "Select" },
     universities: { type: Array, default: () => [] }
   },
 
@@ -190,16 +172,27 @@ export default {
     return {
       form: {
         ...this.lead,
-        City: this.lead.City || "",
-        Zip_Code: this.lead.Zip_Code || ""
+        // Move_Out_Address: "",
+        // Move_Out_City: "",
+        // Move_Out_State: "",
+        // Move_Out_Zip: "",
+        Empty_Bin_Drop_Off_Date: "",
+        Empty_Bin_Drop_Off_Address: "",
+        Empty_Bin_Drop_Off_City: "",
+        Empty_Bin_Drop_Off_State: "",
+        Empty_Bin_Drop_Off_Zip: "",
+        Empty_Bin_Drop_Off_Time_Window: ""
       },
 
-      // 🔴 required, no default
-      sendBillingLocal:  this.sendBilling,
+      sendBillingLocal: this.sendBilling,
 
-      pricingType: "Manual",
       pricePerItem: null,
-      estimatedTotalPrice: 0
+      estimatedTotalPrice: 0,
+
+      lastEditedPricingField: null,
+      pricingError: null,
+
+      skipEmptyBinDropOff: false
     };
   },
 
@@ -213,44 +206,114 @@ export default {
   },
 
   watch: {
-    sendBillingLocal(val) {
-      this.$emit("update:sendBilling", val);
+    sendBillingLocal(newVal) {
+      this.$emit("update:sendBilling", newVal);
     },
-    totalItems: "calculatePricing",
-    pricePerItem: "calculatePricing",
-    pricingType: "calculatePricing"
-  },
+    totalItems() {
+      this.form.Custom_Pricing
+        ? this.handleCustomPricing()
+        : this.calculatePricing();
+    },
+    "form.Custom_Pricing"(val) {
+      this.pricingError = null;
+      this.lastEditedPricingField = null;
 
-  methods: {
-    calculatePricing() {
-      if (this.pricingType === "Manual") {
-        this.estimatedTotalPrice =
-          (this.pricePerItem || 0) * this.totalItems;
+      if (val === false) {
+        // 👈 Force auto pricing when custom pricing is turned OFF
+        this.calculatePricing();
       } else {
-        const price = this.pricingTable(this.totalItems);
-        this.pricePerItem = price;
-        this.estimatedTotalPrice = price * this.totalItems;
+        // 👈 When turning ON custom pricing, start from pricePerItem
+        this.lastEditedPricingField = "pricePerItem";
+        this.handleCustomPricing();
       }
     },
 
-    pricingTable(totalItems) {
-      if (totalItems <= 2) return 22.5;
-      if (totalItems <= 5) return 20;
-      if (totalItems <= 10) return 18;
+
+    pricePerItem() {
+      if (this.form.Custom_Pricing && this.lastEditedPricingField === "pricePerItem") {
+        this.handleCustomPricing();
+      }
+    },
+
+    estimatedTotalPrice() {
+      if (this.form.Custom_Pricing && this.lastEditedPricingField === "estimatedTotalPrice") {
+        this.handleCustomPricing();
+      }
+    },
+
+    skipEmptyBinDropOff(val) {
+      if (val) this.clearEmptyBinDropOffFields();
+    }
+  },
+
+  methods: {
+    requiredRule(v) {
+      return !!v || "Required";
+    },
+
+    roundCurrency(v) {
+      return Number(parseFloat(v).toFixed(2));
+    },
+
+    pricingTable(total) {
+      if (total <= 2) return 22.5;
+      if (total <= 5) return 20;
+      if (total <= 10) return 18;
       return 15;
     },
 
+    handleCustomPricing() {
+      if (this.totalItems <= 0) {
+        this.pricingError = "Total Item Count must be greater than 0";
+        return;
+      }
+      this.pricingError = null;
+
+      if (this.lastEditedPricingField === "pricePerItem") {
+        this.estimatedTotalPrice = this.roundCurrency(this.pricePerItem * this.totalItems);
+      }
+
+      if (this.lastEditedPricingField === "estimatedTotalPrice") {
+        this.pricePerItem = this.roundCurrency(this.estimatedTotalPrice / this.totalItems);
+      }
+    },
+
+    calculatePricing() {
+      const price = this.pricingTable(this.totalItems);
+      this.pricePerItem = price;
+      this.estimatedTotalPrice = this.roundCurrency(price * this.totalItems);
+    },
+
+    clearEmptyBinDropOffFields() {
+      this.form.Empty_Bin_Drop_Off_Date = "";
+      this.form.Empty_Bin_Drop_Off_Address = "";
+      this.form.Empty_Bin_Drop_Off_City = "";
+      this.form.Empty_Bin_Drop_Off_State = "";
+      this.form.Empty_Bin_Drop_Off_Zip = "";
+    },
+
     createOrderHandleSubmit() {
-      // 🔴 VALIDATION TRIGGER
       if (!this.$refs.form.validate()) return;
 
-      this.$emit("submit", {
+      const payload = {
         ...this.form,
         Total_Item_Count: this.totalItems,
         Price_per_Item: this.pricePerItem || 0,
         Estimated_Price: this.estimatedTotalPrice || 0,
-        Lead_Type: this.form.Lead_Type || "Student Storage"
-      });
+        Custom_Pricing: this.form.Custom_Pricing,
+        skipEmptyBinDropOff: this.skipEmptyBinDropOff
+      };
+
+      if (this.skipEmptyBinDropOff) {
+        delete payload.Empty_Bin_Drop_Off_Date;
+        delete payload.Empty_Bin_Drop_Off_Address;
+        delete payload.Empty_Bin_Drop_Off_City;
+        delete payload.Empty_Bin_Drop_Off_State;
+        delete payload.Empty_Bin_Drop_Off_Zip;
+        delete payload.Empty_Bin_Drop_Off_Time_Window;
+      }
+
+      this.$emit("submit", payload);
     }
   }
 };
