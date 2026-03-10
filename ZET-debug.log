@@ -110,3 +110,23 @@
 [info] [2026-01-24T21:12:24.334Z] :  ==> app\js\app.3f222eba.js.map
 [info] [2026-01-24T21:12:24.334Z] :  ==> app\js\chunk-vendors.2b47c24a.js.map
 [info] [2026-01-24T21:12:24.335Z] : Note - File formats that can be packed are: txt, md, xml, dre, jpg, jpeg, png, gif, css, js, html, json, mp3, svg, woff, ttf, eot, webm, mp4, and woff2
+[error] [2026-01-27T01:12:44.129Z] : × Below file formats are not allowed in Sigma
+[info] [2026-01-27T01:12:44.132Z] :  ==> app\favicon.ico
+[info] [2026-01-27T01:12:44.133Z] :  ==> app\js\app.2a0d5197.js.map
+[info] [2026-01-27T01:12:44.133Z] :  ==> app\js\chunk-vendors.ab34eb25.js.map
+[info] [2026-01-27T01:12:44.134Z] : Note - File formats that can be packed are: txt, md, xml, dre, jpg, jpeg, png, gif, css, js, html, json, mp3, svg, woff, ttf, eot, webm, mp4, and woff2
+[error] [2026-01-27T01:12:44.145Z] : × Below file formats are not allowed in Sigma
+[info] [2026-01-27T01:12:44.146Z] :  ==> app\favicon.ico
+[info] [2026-01-27T01:12:44.147Z] :  ==> app\js\app.2a0d5197.js.map
+[info] [2026-01-27T01:12:44.147Z] :  ==> app\js\chunk-vendors.ab34eb25.js.map
+[info] [2026-01-27T01:12:44.148Z] : Note - File formats that can be packed are: txt, md, xml, dre, jpg, jpeg, png, gif, css, js, html, json, mp3, svg, woff, ttf, eot, webm, mp4, and woff2
+[error] [2026-01-27T01:59:34.500Z] : × Below file formats are not allowed in Sigma
+[info] [2026-01-27T01:59:34.503Z] :  ==> app\favicon.ico
+[info] [2026-01-27T01:59:34.504Z] :  ==> app\js\app.b84a5253.js.map
+[info] [2026-01-27T01:59:34.504Z] :  ==> app\js\chunk-vendors.ab34eb25.js.map
+[info] [2026-01-27T01:59:34.505Z] : Note - File formats that can be packed are: txt, md, xml, dre, jpg, jpeg, png, gif, css, js, html, json, mp3, svg, woff, ttf, eot, webm, mp4, and woff2
+[error] [2026-01-27T01:59:34.518Z] : × Below file formats are not allowed in Sigma
+[info] [2026-01-27T01:59:34.519Z] :  ==> app\favicon.ico
+[info] [2026-01-27T01:59:34.520Z] :  ==> app\js\app.b84a5253.js.map
+[info] [2026-01-27T01:59:34.521Z] :  ==> app\js\chunk-vendors.ab34eb25.js.map
+[info] [2026-01-27T01:59:34.522Z] : Note - File formats that can be packed are: txt, md, xml, dre, jpg, jpeg, png, gif, css, js, html, json, mp3, svg, woff, ttf, eot, webm, mp4, and woff2
